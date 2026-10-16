@@ -273,7 +273,6 @@ body.locked .wrap{display:none}
 <div class="gate" id="gate">
   <form class="gate-card" id="gateForm" autocomplete="on">
     <div style="display:grid;gap:4px"><h1>Pilot month 1 tracker</h1><p class="sub">FaDu and Detroit 562 in GelMA</p></div>
-    <label class="field">Your name<input id="gName" type="text" autocomplete="name" required></label>
     <label class="field">Password<input id="gPass" type="password" autocomplete="current-password" required></label>
     <button class="btn" type="submit" id="gBtn">Open</button>
     <p class="small" id="gMsg" role="alert"></p>
@@ -285,7 +284,7 @@ body.locked .wrap{display:none}
       <h1>Pilot month 1 · plan and tracker</h1>
       <p class="sub">FaDu and Detroit 562 in GelMA · 2D drug curves · scratch assay · 3D growth and stiffness</p>
     </div>
-    <div class="hdr-r"><div class="saving" id="saveState">Connecting…</div><label class="whoname">Your name <input type="text" id="whoName" placeholder="type once" autocomplete="name"></label><button type="button" class="linkbtn" id="lockBtn">Lock this device</button></div>
+    <div class="hdr-r"><div class="saving" id="saveState">Connecting…</div><label class="whoname">Your name <input type="text" id="whoName" placeholder="optional" autocomplete="name"></label><button type="button" class="linkbtn" id="lockBtn">Lock this device</button></div>
   </header>
 
   <div class="strip">
@@ -324,7 +323,7 @@ body.locked .wrap{display:none}
       <h2>How to use this page</h2>
       <p class="small"><b>First:</b> in tabs <b>A</b>, <b>B</b> and <b>C</b>, give every run a <b>planned start</b>; the end is calculated from the protocol. In <b>0 · Prep</b>, give each item an expected date. The timeline and the late alerts are built from these dates.</p>
       <p class="small">Each run is one line per cell line. Tick each step on the day it is done; the date fills in by itself (click the date to correct it). Ticking a later step also ticks the earlier ones. Passage and note are optional. Tick <b>Data uploaded</b> when the raw files are in the shared folder. If a run fails, tick <b>Failed</b> and use <b>+ Add a run</b> to repeat it.</p>
-      <p class="small">Use the <b>Log</b> for problems, deviations and questions; tick <b>Needs PI answer</b> for anything that needs a decision. Everything saves automatically and everyone sees the same page; changes are signed with the name you typed.</p>
+      <p class="small">Use the <b>Log</b> for problems, deviations and questions; tick <b>Needs PI answer</b> for anything that needs a decision. Everything saves automatically and everyone sees the same page. Optional: type your name at the top right once, and your changes will show who made them.</p>
     </div>
     <details class="guide howto about">
       <summary>About this month: why, what we learn, and the choices behind it</summary>
@@ -1170,7 +1169,7 @@ ladder("ladder-def",[0.03,0.1,0.3,1,3,10],[[1,"1 µM: FAK and invasion inhibited
 function lock(msg){
   pass=""; try{localStorage.removeItem("tracker-pass");}catch(e){}
   document.body.classList.add("locked"); $("#gMsg").textContent=msg||""; $("#gPass").value="";
-  $("#gName").value=myId; setTimeout(()=>($("#gName").value?$("#gPass"):$("#gName")).focus(),0);
+  setTimeout(()=>$("#gPass").focus(),0);
 }
 async function unlock(p){
   const res=await rpc("hnscc_tracker_load",{p_study:STUDY,p_pass:p});
@@ -1180,9 +1179,7 @@ async function unlock(p){
 }
 $("#gateForm").addEventListener("submit",async ev=>{
   ev.preventDefault();
-  const nm=$("#gName").value.trim(), p=$("#gPass").value;
-  if(!nm){$("#gName").focus();return;}
-  myId=nm; $("#whoName").value=nm; try{localStorage.setItem("tracker-name",nm);}catch(e){}
+  const p=$("#gPass").value;
   $("#gBtn").disabled=true; $("#gMsg").textContent="Checking…";
   try{await unlock(p);$("#gMsg").textContent="";}
   catch(e){$("#gMsg").textContent=e.badPass?"Wrong password.":"Could not reach the server. Check the internet connection and try again.";}
@@ -1203,7 +1200,7 @@ setInterval(()=>{if(document.visibilityState==="visible")pull();},POLL_MS);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pull();});
 (async()=>{
   let saved=""; try{saved=localStorage.getItem("tracker-pass")||"";}catch(e){}
-  if(saved&&myId){try{await unlock(saved);return;}catch(e){lock(e.badPass?"":"Could not reach the server. Check the internet connection and try again.");return;}}
+  if(saved){try{await unlock(saved);return;}catch(e){lock(e.badPass?"":"Could not reach the server. Check the internet connection and try again.");return;}}
   lock("");
 })();
 })();
