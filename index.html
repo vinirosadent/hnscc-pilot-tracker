@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pilot Month 1 Tracker</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lab tracker — sticky status strip, four tabs (Overview, Tasks, Log, Setup); overview leads with KPIs and a month timeline. */
+:root{
+  --bg:#f2f4f6; --surface:#ffffff; --ink:#18212b; --muted:#5a6573; --line:#d5dbe2; --soft:#e9edf1;
+  --head:#0f4c5c; --accent:#0f7c74; --accent-soft:#d9f0ed; --plan:#bfe3de;
+  --ok:#0f7c74; --ok-soft:#d9f0ed; --prog:#1f5f99; --prog-soft:#e3eef8;
+  --late:#b3361e; --late-soft:#fbe4de; --today:#e8b400; --today-soft:#fff3c4;
+  --p0:#7a8694; --pa:#c27c0e; --pb:#6b4fbb; --pc:#0f7c74; --pd:#1f5f99;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --surface:#19212a; --ink:#e5eaf0; --muted:#9ba7b4; --line:#2c3641; --soft:#222b35;
+  --head:#7cc7d6; --accent:#3fbfb3; --accent-soft:#143430; --plan:#1f4a45;
+  --ok:#3fbfb3; --ok-soft:#143430; --prog:#7db4e6; --prog-soft:#1b2c3d;
+  --late:#f08a72; --late-soft:#3d211a; --today:#f2c94c; --today-soft:#3a3114;
+  --p0:#8d99a7; --pa:#e6a63e; --pb:#a993f0; --pc:#3fbfb3; --pd:#7db4e6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --surface:#19212a; --ink:#e5eaf0; --muted:#9ba7b4; --line:#2c3641; --soft:#222b35;
+  --head:#7cc7d6; --accent:#3fbfb3; --accent-soft:#143430; --plan:#1f4a45;
+  --ok:#3fbfb3; --ok-soft:#143430; --prog:#7db4e6; --prog-soft:#1b2c3d;
+  --late:#f08a72; --late-soft:#3d211a; --today:#f2c94c; --today-soft:#3a3114;
+  --p0:#8d99a7; --pa:#e6a63e; --pb:#a993f0; --pc:#3fbfb3; --pd:#7db4e6; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 72px;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.2;text-wrap:balance}
+h1{font-size:clamp(22px,3.4vw,30px);font-weight:800;color:var(--head)}
+h2{font-size:19px;font-weight:700;color:var(--head)}
+h3{font-size:15px;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)} .mono{font-family:var(--mono)} .small{font-size:13px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:flex-end}
+.sub{font-size:13.5px;color:var(--muted)}
+.sub a{color:inherit}
+.strip{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;display:grid;gap:10px}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 14px;font-weight:600;color:var(--muted);cursor:pointer}
+nav.tabs button[aria-selected="true"]{color:var(--head);border-bottom-color:var(--head)}
+nav.tabs .count{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:999px;background:var(--late);color:#fff;font-size:11.5px;font-family:var(--mono);line-height:18px;text-align:center}
+.banner{border-radius:8px;padding:10px 14px;font-size:14px;background:var(--today-soft);border:1px solid var(--today)}
+.saving{font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:2px;min-width:0}
+.kpi b{font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi.alert{border-color:var(--late);background:var(--late-soft)} .kpi.alert b{color:var(--late)}
+.bar{height:8px;border-radius:999px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:999px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+
+/* timeline */
+.tl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.tl{display:grid;grid-template-columns:230px repeat(35,24px);min-width:1070px;font-size:12px}
+.tl .h{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-align:center;padding:4px 0;border-bottom:1px solid var(--line);position:relative}
+.tl .h.wk{border-left:1px solid var(--line)}
+.tl .h.td{background:var(--today-soft);color:var(--ink);font-weight:600}
+.tl .lab{padding:5px 8px;border-bottom:1px solid var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:6px;align-items:center;min-width:0}
+.tl .lab .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.tl .ph{grid-column:1 / -1;padding:6px 8px;font-weight:700;font-size:12px;background:var(--soft);color:var(--head)}
+.tl .cell{border-bottom:1px solid var(--soft);position:relative}
+.tl .cell.wk{border-left:1px solid var(--soft)}
+.tl .cell.td{background:var(--today-soft)}
+.tl .cell .pl{position:absolute;left:0;right:0;top:7px;height:10px;background:var(--plan)}
+.tl .cell .ac{position:absolute;left:0;right:0;top:9px;height:6px;background:var(--accent)}
+.tl .cell .ac.late{background:var(--late)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:8px;border-radius:2px;vertical-align:1px;margin-right:5px}
+
+.pill{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--soft);color:var(--muted)}
+.pill.done{background:var(--ok-soft);color:var(--ok)} .pill.prog{background:var(--prog-soft);color:var(--prog)}
+.pill.late{background:var(--late-soft);color:var(--late);font-weight:600}
+.chip{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--muted)}
+.tbl{overflow-x:auto}
+
+/* tasks */
+.phase{display:grid;gap:8px}
+.phase-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.task{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr);gap:12px;align-items:start}
+.task.is-done{opacity:.72}
+@media (max-width:820px){.task{grid-template-columns:1fr 1fr}.task .t-name,.task .t-notes{grid-column:1 / -1}}
+.t-name{display:grid;gap:4px;min-width:0}
+.t-name .nm{font-weight:600}
+.t-name .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.chk{display:grid;gap:4px;min-width:0}
+.chk label.ck{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px;cursor:pointer}
+.chk input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);cursor:pointer}
+.chk input[type=date]{border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--surface);font-size:13px;width:100%;max-width:170px}
+.t-notes textarea{width:100%;min-height:58px;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);resize:vertical;font-size:13.5px}
+.t-notes .who{font-size:11.5px;color:var(--muted);margin-top:2px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--head);color:var(--surface);border-color:var(--head)}
+
+/* log */
+.logform{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;align-items:end}
+.logform .wide{grid-column:1 / -1}
+.field{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.field select,.field input,.field textarea{border:1px solid var(--line);border-radius:6px;padding:7px 8px;background:var(--surface);color:var(--ink);font-size:14px}
+.field textarea{min-height:70px;resize:vertical}
+.btn{border:0;border-radius:8px;background:var(--head);color:var(--surface);padding:9px 16px;font-weight:600;cursor:pointer}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--ink)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.entry{border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:12px 14px;display:grid;gap:8px}
+.entry.pi{border-left:5px solid var(--late)}
+.entry .top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--muted)}
+.entry .txt{white-space:pre-wrap}
+.entry .reply{background:var(--soft);border-radius:6px;padding:8px 10px;font-size:14px;white-space:pre-wrap}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:16px;color:var(--muted);font-size:14px}
+.needs{display:grid;gap:8px}
+[hidden]{display:none!important}
+
+/* guide blocks merged into tracker */
+:root{--cis:var(--pa);--def:var(--pb);--gel:var(--pc);--cis-soft:#fbefd9;--def-soft:#ece6fa;--gel-soft:#d9f0ed}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--cis-soft:#3a2d16;--def-soft:#2c2442;--gel-soft:#143430}}
+:root[data-theme="dark"]{--cis-soft:#3a2d16;--def-soft:#2c2442;--gel-soft:#143430}
+.guide{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--line);border-radius:10px;padding:18px 20px;display:grid;gap:16px;min-width:0}
+.guide.cis{border-top-color:var(--cis)} .guide.def{border-top-color:var(--def)} .guide.gel{border-top-color:var(--gel)} .guide.grey{border-top-color:var(--p0)} .guide.blue{border-top-color:var(--pd)}
+.card-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline}
+.tag{font-family:var(--mono);font-size:12px;padding:3px 10px;border-radius:999px;background:var(--soft)}
+.q{font-size:15.5px;font-weight:600;border-left:3px solid var(--head);padding-left:12px;max-width:75ch}
+dl.spec{display:grid;grid-template-columns:minmax(120px,190px) 1fr;margin:0;border-top:1px solid var(--line)}
+dl.spec dt,dl.spec dd{margin:0;padding:9px 0;border-bottom:1px solid var(--line);min-width:0}
+dl.spec dt{font-weight:600;padding-right:14px}
+dl.spec dd small{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+@media (max-width:560px){dl.spec{grid-template-columns:1fr} dl.spec dt{border-bottom:none;padding-bottom:0}}
+.why{font-size:14px;color:var(--muted);border-left:3px solid var(--line);padding-left:12px;max-width:80ch}
+.why b{color:var(--ink)}
+.avoid{background:var(--soft);border-radius:8px;padding:14px 16px;display:grid;gap:8px}
+.avoid ul{margin:0;padding-left:20px;display:grid;gap:5px;font-size:14px}
+.avoid h4,.sub4{font-family:var(--display);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0}
+.okbox{background:var(--ok-soft);border-radius:8px;padding:12px 16px;font-size:14.5px}
+.calc{font-family:var(--mono);font-size:13px;background:var(--soft);border-radius:6px;padding:10px 12px;overflow-x:auto}
+figure{margin:0;display:grid;gap:8px;min-width:0}
+figcaption{font-size:13px;color:var(--muted)}
+.fig{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px}
+.fig svg{display:block;width:100%;height:auto;min-width:560px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.two .fig svg{min-width:300px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.flow .st{flex:1 1 130px;background:var(--soft);border-radius:8px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.flow .st b{font-family:var(--mono);font-size:12px;color:var(--muted);font-weight:500}
+.flow .st span{font-size:13.5px;font-weight:600}
+.flow .st small{font-size:12.5px;color:var(--muted)}
+.cis .flow .st{background:var(--cis-soft)} .def .flow .st{background:var(--def-soft)} .gel .flow .st{background:var(--gel-soft)}
+details.howto>summary{cursor:pointer;font-family:var(--display);font-weight:700;color:var(--head);font-size:15px;list-style:none;display:flex;gap:8px;align-items:center}
+details.howto>summary::-webkit-details-marker{display:none}
+details.howto>summary::before{content:"▸";transition:transform .15s}
+details.howto[open]>summary::before{transform:rotate(90deg)}
+details.howto>div{display:grid;gap:16px;margin-top:14px}
+.section-title{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline}
+svg text{font-family:var(--body)}
+.task.is-na{opacity:.55}
+.pill.na{background:var(--soft);color:var(--muted);text-decoration:line-through}
+.na-box{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);cursor:pointer;margin-top:2px}
+.na-box input{width:16px;height:16px;accent-color:var(--muted)}
+.tl .cell .pl.na{background:var(--soft)}
+.qs{margin:0;padding-left:20px;display:grid;gap:6px}
+
+.task{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,.85fr) minmax(0,.85fr) minmax(0,1.3fr)}
+@media (max-width:900px){.task{grid-template-columns:1fr 1fr}.task .t-name,.task .t-notes{grid-column:1 / -1}}
+.chk .ck{display:flex;gap:8px;align-items:center;font-weight:600;font-size:14px}
+.chk.plan input[type=date]{border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:var(--today-soft);font-size:13px;width:100%;max-width:170px}
+.pill.need{background:var(--today-soft);color:var(--ink);font-weight:600}
+
+.gtab td,.gtab th{padding:6px 8px}
+.gtab tr.r-neg td,.gtab tr.r-pos td{background:var(--soft)}
+.role{display:inline-block;font-size:11.5px;font-family:var(--mono);padding:1px 7px;border-radius:4px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
+.role.test{color:var(--ink)}
+.role.neg{border-color:var(--prog);color:var(--prog)}
+.role.pos{border-color:var(--late);color:var(--late)}
+.added{font-family:var(--mono);font-size:11px;color:var(--accent)}
+.addctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding:10px 12px;border:1px dashed var(--line);border-radius:8px}
+.addctl .lbl{flex:1 1 100%;font-size:13px;font-weight:600}
+.addctl select,.addctl input{border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--ink);font-size:13.5px;min-width:0}
+.addctl input{flex:1 1 200px}
+.addctl .btn{padding:7px 14px}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 6px}
+.x:hover{color:var(--late)}
+
+.guide.about{border-top-color:var(--head)}
+.motiv{display:grid;gap:8px;max-width:80ch}
+.motiv p{font-size:15px}
+table.learn td{vertical-align:top;font-size:14px}
+table.learn td:first-child{white-space:nowrap}
+table.learn .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+details.howto>summary::marker{content:""}
+
+.about .card{align-content:start}
+.about .card dl.spec{grid-template-columns:110px 1fr}
+.about .card dl.spec dd{font-size:14px}
+
+/* local file version */
+.filebar{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+.filebar .btn{padding:6px 12px;font-size:13px}
+.filebar .btn.needsave{outline:2px solid var(--today);outline-offset:1px}
+.whoname{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.whoname input{width:120px;padding:4px 8px;font-size:12.5px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink)}
+.reopen{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.reopen .btn{padding:6px 12px;font-size:13px}
+.start{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--surface);font-size:14px}
+.start ol{margin:6px 0 0;padding-left:20px;display:grid;gap:3px}
+/* ---- online version ---- */
+.gate{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;padding:16px}
+body:not(.locked) .gate{display:none}
+body.locked .wrap{display:none}
+.gate-card{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--head);border-radius:12px;padding:24px;display:grid;gap:14px;width:min(380px,100%)}
+.gate-card h1{font-size:24px}
+.gate-card .btn{justify-self:start}
+#gMsg{min-height:1.2em;color:var(--late)}
+.hdr-r{display:grid;gap:6px;justify-items:end}
+.saving.warn{color:var(--late);font-weight:600}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:12.5px;padding:0}
+.arow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.act{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-size:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.exp{display:grid;gap:8px}
+.exp+.exp{margin-top:14px}
+.exp-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+.addrun{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.addrun select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--surface);color:var(--ink);font-size:13px}
+.btn.small{padding:6px 12px;font-size:13px}
+.run{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:8px;min-width:0}
+.run.is-done{opacity:.75}
+.run.is-na{opacity:.55}
+.r-top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.r-name{display:flex;gap:8px;align-items:center;min-width:200px;flex-wrap:wrap}
+.r-plan{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.r-plan input{border:1px solid var(--line);border-radius:6px;padding:3px 6px;background:var(--today-soft);font-size:13px;color:var(--ink)}
+.r-pass,.r-note,.tnote{border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:var(--surface);color:var(--ink);font-size:13px;min-width:0}
+.r-pass{width:64px}
+.r-note{flex:1 1 180px}
+.tnote{width:100%}
+.r-steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.step{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;background:var(--surface)}
+.step label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.step.on{background:var(--ok-soft);border-color:var(--ok)}
+.step input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:pointer;margin:0}
+.step input[type=date]{background:transparent;border:0;padding:0;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.step.data{border-style:dashed}
+.step.data.on{background:var(--prog-soft);border-color:var(--prog);border-style:solid}
+.arrow{color:var(--muted)}
+.r-who{font-size:11.5px;color:var(--muted)}
+.pill.fail{background:var(--soft);color:var(--late);text-decoration:line-through}
+.pill.data{background:var(--prog-soft);color:var(--prog);font-weight:600}
+@media (max-width:560px){.r-name{min-width:0;flex:1 1 100%}.r-note{flex:1 1 100%}nav.tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}nav.tabs button{flex:none;padding:8px 10px}.hdr-r{justify-items:start}}
+</style>
+</head>
+<body class="locked">
+<div class="gate" id="gate">
+  <form class="gate-card" id="gateForm" autocomplete="on">
+    <div style="display:grid;gap:4px"><h1>Pilot month 1 tracker</h1><p class="sub">FaDu and Detroit 562 in GelMA</p></div>
+    <label class="field">Your name<input id="gName" type="text" autocomplete="name" required></label>
+    <label class="field">Password<input id="gPass" type="password" autocomplete="current-password" required></label>
+    <button class="btn" type="submit" id="gBtn">Open</button>
+    <p class="small" id="gMsg" role="alert"></p>
+  </form>
+</div>
+<div class="wrap">
+  <header class="top">
+    <div style="display:grid;gap:4px">
+      <h1>Pilot month 1 · plan and tracker</h1>
+      <p class="sub">FaDu and Detroit 562 in GelMA · 2D drug curves · scratch assay · 3D growth and stiffness</p>
+    </div>
+    <div class="hdr-r"><div class="saving" id="saveState">Connecting…</div><label class="whoname">Your name <input type="text" id="whoName" placeholder="type once" autocomplete="name"></label><button type="button" class="linkbtn" id="lockBtn">Lock this device</button></div>
+  </header>
+
+  <div class="strip">
+    <div class="banner" id="banner" hidden></div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-tab="overview">Overview</button>
+      <button role="tab" data-tab="p0">0 · Prep</button>
+      <button role="tab" data-tab="pa">A · Drug curves</button>
+      <button role="tab" data-tab="pb">B · Scratch</button>
+      <button role="tab" data-tab="pc">C · 3D GelMA</button>
+      <button role="tab" data-tab="pd">D · Data</button>
+      <button role="tab" data-tab="log">Log <span class="count" id="piCount" hidden>0</span></button>
+    </nav>
+  </div>
+
+  <!-- ================= OVERVIEW ================= -->
+  <section id="tab-overview" class="tabpane" style="display:grid;gap:18px">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid2">
+      <div class="card"><h2>Needs attention</h2><div id="attention" class="needs"></div></div>
+      <div class="card"><h2>Latest activity</h2><div id="activity" class="needs"></div></div>
+    </div>
+    <div class="card">
+      <div class="section-title">
+        <h2>Month timeline</h2>
+        <div class="legend"><span><i style="background:var(--plan)"></i>planned</span><span><i style="background:var(--accent)"></i>actual</span><span><i style="background:var(--late)"></i>actual, past plan</span><span><i style="background:var(--today-soft);border:1px solid var(--today)"></i>today</span></div>
+      </div>
+      <div class="tl-scroll"><div class="tl" id="timeline"></div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><h2>Progress by experiment</h2><div id="phaseProg" style="display:grid;gap:10px"></div></div>
+      <div class="card"><h2>Purchases and setup</h2><div class="tbl"><table><thead><tr><th>Item</th><th>Ordered</th><th>Received</th></tr></thead><tbody id="purch"></tbody></table></div></div>
+    </div>
+    <div class="card"><h2>Waiting for PI</h2><div id="waitPI" class="needs"></div></div>
+    <div class="card">
+      <h2>How to use this page</h2>
+      <p class="small"><b>First:</b> in tabs <b>A</b>, <b>B</b> and <b>C</b>, give every run a <b>planned start</b>; the end is calculated from the protocol. In <b>0 · Prep</b>, give each item an expected date. The timeline and the late alerts are built from these dates.</p>
+      <p class="small">Each run is one line per cell line. Tick each step on the day it is done; the date fills in by itself (click the date to correct it). Ticking a later step also ticks the earlier ones. Passage and note are optional. Tick <b>Data uploaded</b> when the raw files are in the shared folder. If a run fails, tick <b>Failed</b> and use <b>+ Add a run</b> to repeat it.</p>
+      <p class="small">Use the <b>Log</b> for problems, deviations and questions; tick <b>Needs PI answer</b> for anything that needs a decision. Everything saves automatically and everyone sees the same page; changes are signed with the name you typed.</p>
+    </div>
+    <details class="guide howto about">
+      <summary>About this month: why, what we learn, and the choices behind it</summary>
+      <div>
+        <div class="motiv">
+          <h3>Why this work</h3>
+          <p>Cancer drugs are usually tested on cells grown flat on plastic. In a tumour, cells sit inside a soft or stiff 3D tissue that changes how they grow, move and respond to drugs. Our goal is to build 3D hydrogels that reproduce these tumour conditions, so drugs can be tested in a more realistic setting.</p>
+          <p>Before designing those gels, we need a baseline: do head and neck cancer cells grow in our GelMA, do they change the gel around them, and which drug doses work on them. This month answers exactly that.</p>
+        </div>
+
+        <h3>What each step teaches us</h3>
+        <div class="tbl"><table class="learn">
+          <thead><tr><th>Step</th><th>Goal</th><th>What we will learn</th><th>Used for</th></tr></thead>
+          <tbody>
+            <tr><td><span class="dot" style="background:var(--p0)"></span><b>0 · Prep</b></td><td>Have every reagent, both cell lines and one GelMA lot ready.</td><td>—</td><td>Results comparable across the whole month.</td></tr>
+            <tr><td><span class="dot" style="background:var(--pa)"></span><b>A1 · Cisplatin IC50</b></td><td>Measure how much cisplatin kills half of the cells in 2D.</td><td>The working dose range for each line.</td><td>Choosing the doses for the 3D drug test next month.</td></tr>
+            <tr><td><span class="dot" style="background:var(--pa)"></span><b>A2 · Defactinib safe dose</b></td><td>Find the highest dose that does not harm the cells.</td><td>A dose that blocks migration without killing.</td><td>The scratch assay (B) and later the 3D invasion test.</td></tr>
+            <tr><td><span class="dot" style="background:var(--pb)"></span><b>B1 · Mitomycin C check</b></td><td>Find the dose that stops cell division without killing.</td><td>How to block proliferation in each line.</td><td>Making sure the wound closes by migration only.</td></tr>
+            <tr><td><span class="dot" style="background:var(--pb)"></span><b>B2 · Scratch assay</b></td><td>Test whether defactinib slows migration.</td><td>Whether the lines migrate enough, and whether blocking FAK reduces it.</td><td>Planning the 3D invasion experiments.</td></tr>
+            <tr><td><span class="dot" style="background:var(--pc)"></span><b>C · 3D GelMA</b></td><td>Grow cells in soft (5%) and stiff (10%) gels for 7 days, with cell-free gels alongside.</td><td>Whether growth differs between gels, and whether the cells change the stiffness of the gel.</td><td>The core question of the project: how cells and gel shape each other.</td></tr>
+            <tr><td><span class="dot" style="background:var(--pd)"></span><b>D · Data</b></td><td>Send all raw data with maps and lot numbers.</td><td>—</td><td>Analysis by the PI.</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grid2">
+          <div class="card" style="gap:10px">
+            <h3>Why these drugs</h3>
+            <dl class="spec">
+              <dt>Cisplatin</dt><dd>The standard chemotherapy for head and neck cancer. It damages DNA and kills dividing cells. We use it as the reference drug to compare how cells respond in 2D and, later, in 3D gels.</dd>
+              <dt>Defactinib</dt><dd>Blocks FAK, a protein cells use to grip the surrounding matrix and move. Here it is a tool, not a treatment: if migration drops with defactinib, we know our migration test measures what it should.</dd>
+              <dt>Mitomycin C</dt><dd>Stops cell division. Used only in the scratch assay, so that the wound closes because cells move, not because they multiply.</dd>
+            </dl>
+          </div>
+          <div class="card" style="gap:10px">
+            <h3>Why these cells</h3>
+            <dl class="spec">
+              <dt>FaDu</dt><dd>Squamous cell carcinoma of the hypopharynx, HPV-negative, fast-growing (doubling ≈30–50 h). Widely used, with published cisplatin data in 2D and 3D, so our results can be compared with others.</dd>
+              <dt>Detroit 562</dt><dd>Pharyngeal carcinoma taken from a metastasis, HPV-negative, slow-growing (doubling ≈90 h), with a PIK3CA mutation. Its metastatic origin makes it relevant for migration and invasion, and it behaves differently from FaDu.</dd>
+            </dl>
+            <h4 class="sub4">What these two lines do not solve</h4>
+            <ul class="small" style="margin:0;padding-left:18px;display:grid;gap:4px">
+              <li>Neither comes from the mouth: oral-cavity lines will still be needed.</li>
+              <li>Both are HPV-negative, so HPV-positive tumours are not covered.</li>
+              <li>Long-established lines, adapted to plastic: they do not capture the variation between patients.</li>
+              <li>Cancer cells alone: no fibroblasts or immune cells, which also shape drug response in a real tumour.</li>
+              <li>Two lines show a trend, not a general rule for all head and neck cancers.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= 0 · PREP ================= -->
+  <section id="tab-p0" class="tabpane" hidden style="display:grid;gap:18px">
+    <div class="section-title"><h2>Tasks</h2></div>
+    <div id="tasks-p0" class="phase"></div>
+    <details class="guide grey howto" open>
+      <summary>What to prepare, and why</summary>
+      <div>
+        <p class="q">Everything the month needs must be in the lab, recorded and ready before Day 1.</p>
+        <h3>The two cell lines</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Line</th><th>Doubling time</th><th>2D seeding (96-well, 72 h assay)</th><th>Published 2D cisplatin IC50 (72 h)</th></tr></thead>
+          <tbody>
+            <tr><td><b>FaDu</b></td><td>≈30–50 h</td><td>5,000 cells/well</td><td>2 µM</td></tr>
+            <tr><td><b>Detroit 562</b></td><td>≈90 h (slow)</td><td>10,000 cells/well</td><td>1.5, 7 and 13 µM in three studies</td></tr>
+          </tbody>
+        </table></div>
+        <p class="why"><b>Why:</b> Detroit 562 grows about twice as slowly as FaDu, so it needs more cells per well to give a clear WST-1 signal. Published IC50 values vary between labs, so we measure our own.</p>
+        <h3>Reagents</h3>
+        <dl class="spec">
+          <dt>Cisplatin</dt><dd>Stock 1 mg/mL (3.3 mM) in 0.9% NaCl. Never DMSO. Light-protected tube at room temperature, use within one month.</dd>
+          <dt>Defactinib</dt><dd>Stock 10 mM in DMSO, single-use aliquots, frozen.</dd>
+          <dt>Mitomycin C</dt><dd>Per supplier. Cytotoxic and mutagenic: biosafety cabinet, gloves, chemo waste.</dd>
+          <dt>WST-1</dt><dd>Enough for all 2D plates and all 3D proliferation gels of the month.</dd>
+          <dt>GelMA</dt><dd>One single lot for the whole month. Record source, lot number, degree of methacrylation, light source, intensity and exposure time.</dd>
+        </dl>
+        <p class="why"><b>Why one GelMA lot:</b> the same 7.5% GelMA gave a 4-fold different stiffness between two lots in our previous work. Changing lot in the middle of the month makes the results impossible to compare.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= A · DRUG CURVES ================= -->
+  <section id="tab-pa" class="tabpane" hidden style="display:grid;gap:18px">
+    <div class="section-title"><h2>Runs</h2></div>
+    <div id="tasks-pa" class="phase"></div>
+    <details class="guide cis howto" open>
+      <summary>A1 · Cisplatin dose-response (IC50): what and why</summary>
+      <div>
+        <div class="card-head"><p class="q">At what concentration does cisplatin kill half of the cells? This sets the doses for the 3D drug test next month.</p><span class="tag">72 h exposure · 3 runs per line</span></div>
+        <div class="flow cis">
+          <div class="st"><b>Day 0</b><span>Seed 96-well plates</span><small>drug plate + time-zero plate, per cell line</small></div>
+          <div class="st"><b>Day 1 (24 h)</b><span>Add cisplatin</span><small>read the time-zero plate now</small></div>
+          <div class="st"><b>Day 4 (72 h)</b><span>WST-1 on the drug plate</span><small>send raw absorbance</small></div>
+        </div>
+        <h3>Groups</h3>
+        <div class="groups" data-exp="a1"></div>
+        <figure>
+          <div class="fig"><svg id="ladder-cis" viewBox="0 0 790 170" role="img" aria-label="cisplatin concentrations on a log scale with published IC50 values"></svg></div>
+          <figcaption>The 8 cisplatin concentrations (circles) and published 2D IC50 values for FaDu and Detroit 562 (triangles, 72 h). All fall in the middle of the range, so the curve will have points on both plateaus.</figcaption>
+        </figure>
+        <dl class="spec">
+          <dt>Seeding</dt><dd>FaDu 5,000 and Detroit 562 10,000 cells/well, in 100 µL.<small>Check: vehicle wells must still be below confluence at the end (day 4). If they are full, halve the density in the next run; if the WST-1 signal is weak, double it.</small></dd>
+          <dt>Vehicle</dt><dd>Medium with the same volume of 0.9% NaCl as the 100 µM wells (3%). Every well gets the same saline volume.</dd>
+          <dt>Plate layout</dt><dd>Outer wells filled with PBS only.</dd>
+          <dt>Replicates</dt><dd>3 wells per group; 3 independent runs on different days and passages.</dd>
+        </dl>
+        <div class="two">
+          <figure>
+            <div class="fig"><svg id="curve" viewBox="0 0 400 230" role="img" aria-label="example dose-response curve"></svg></div>
+            <figcaption>What a good result looks like: flat at the bottom, flat at the top, IC50 in between. Example shape, not data.</figcaption>
+          </figure>
+          <div style="display:grid;gap:10px;align-content:start">
+            <h4 class="sub4">How the numbers are used</h4>
+            <div class="calc">% viability = (A<sub>well</sub> − A<sub>blank</sub>) / (A<sub>vehicle</sub> − A<sub>blank</sub>) × 100</div>
+            <p class="small">The PI fits the curve and calculates IC50. Send raw absorbance and plate maps.</p>
+          </div>
+        </div>
+      </div>
+    </details>
+    <details class="guide def howto" open>
+      <summary>A2 · Defactinib safe dose: what and why</summary>
+      <div>
+        <div class="card-head"><p class="q">What is the highest defactinib dose that does not harm the cells during a scratch assay?</p><span class="tag">24 h exposure · 3 runs per line</span></div>
+        <div class="flow def">
+          <div class="st"><b>Day 0</b><span>Seed 96-well plate</span><small>same density as A1</small></div>
+          <div class="st"><b>Day 1</b><span>Add defactinib</span><small>0.1% DMSO in all wells</small></div>
+          <div class="st"><b>Day 2 (24 h)</b><span>WST-1</span><small>same duration as the scratch assay</small></div>
+        </div>
+        <h3>Groups</h3>
+        <div class="groups" data-exp="a2"></div>
+        <figure>
+          <div class="fig"><svg id="ladder-def" viewBox="0 0 790 170" role="img" aria-label="defactinib concentrations on a log scale with published reference doses"></svg></div>
+          <figcaption>The 6 defactinib concentrations and doses reported in other cancer cell lines. No published defactinib dose was found for FaDu or Detroit 562, so the safe dose is expected at or below about 1 µM.</figcaption>
+        </figure>
+        <dl class="spec">
+          <dt>Replicates</dt><dd>3 wells per group; 3 independent runs.</dd>
+          <dt>Decision rule</dt><dd>Safe dose = the highest concentration whose mean viability stays within 10% of vehicle in all runs. Use it, plus the next lower concentration, in the scratch assay (tab B).</dd>
+        </dl>
+        <p class="why"><b>Why:</b> if the dose weakens the cells, the wound closes less because there are fewer cells, not because they migrate less.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= B · SCRATCH ================= -->
+  <section id="tab-pb" class="tabpane" hidden style="display:grid;gap:18px">
+    <div class="section-title"><h2>Runs</h2></div>
+    <div id="tasks-pb" class="phase"></div>
+    <details class="guide def howto" open>
+      <summary>B · Scratch assay with defactinib: what and why</summary>
+      <div>
+        <p class="q">Does defactinib slow the migration of these cells? Two steps, in this order.</p>
+
+        <h3>Step 1 · Mitomycin C check</h3>
+        <p class="small"><b>What it is:</b> mitomycin C stops cell division, so in the scratch assay the wound closes only by migration. This check finds the dose that stops division without killing or detaching the cells. Run it once per cell line, before the first scratch assay.</p>
+        <div class="flow def">
+          <div class="st"><b>Day 0</b><span>Seed to full confluence</span><small>24-well plate, no scratch</small></div>
+          <div class="st"><b>Day 1</b><span>Mitomycin C 2 h, wash ×2</span><small>count cells (or WST-1) right after</small></div>
+          <div class="st"><b>Day 2 (24 h)</b><span>Count cells again</span><small>and look at the morphology</small></div>
+        </div>
+        <div class="groups" data-exp="b1"></div>
+        <p class="okbox"><b>Pass:</b> cell number does not increase over 24 h, and cells stay attached and spread. Use the lowest dose that passes in Step 2. <b>Fail:</b> cells round up or detach, so drop to 5 µg/mL or to 1 h.</p>
+
+        <h3>Step 2 · Scratch assay</h3>
+        <div class="flow def">
+          <div class="st"><b>Day 0</b><span>Seed to full confluence</span><small>24-well plate, reference line drawn on the bottom</small></div>
+          <div class="st"><b>Day 1</b><span>Mitomycin C, scratch, wash</span><small>dose from Step 1</small></div>
+          <div class="st"><b>Day 1</b><span>Add groups, image 0 h</span><small>same positions every time</small></div>
+          <div class="st"><b>Until closed</b><span>Image again</span><small>until vehicle wounds are nearly closed</small></div>
+        </div>
+        <div class="groups" data-exp="b2"></div>
+        <dl class="spec">
+          <dt>Scratch</dt><dd>One straight line per well with a 200 µL pipette tip, held vertical, same pressure each time. Wash twice with PBS to remove floating cells.</dd>
+          <dt>Imaging</dt><dd>Phase contrast, same positions just above and below the marker line, same magnification throughout.</dd>
+          <dt>Analysis</dt><dd>Open wound area in ImageJ (Wound Healing Size Tool or manual outline). Send raw images too.</dd>
+        </dl>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= C · 3D GELMA ================= -->
+  <section id="tab-pc" class="tabpane" hidden style="display:grid;gap:18px">
+    <div class="section-title"><h2>Runs</h2></div>
+    <div id="tasks-pc" class="phase"></div>
+    <details class="guide gel howto" open>
+      <summary>C · Cancer cells in GelMA (main experiment): what and why</summary>
+      <div>
+        <div class="card-head"><p class="q">Do the cells grow in both gels, and do they change the stiffness of the gel compared with the same gel without cells?</p><span class="tag">2 runs per line · days 0, 1, 3, 7</span></div>
+        <div class="flow gel">
+          <div class="st"><b>Casting day</b><span>All gels at once</span><small>same lot, same light, same day</small></div>
+          <div class="st"><b>Day 0</b><span>R + P</span><small>right after casting and first medium change</small></div>
+          <div class="st"><b>Day 1</b><span>R + P</span></div>
+          <div class="st"><b>Day 3</b><span>R + P</span></div>
+          <div class="st"><b>Day 7</b><span>R + P</span></div>
+        </div>
+        <h3>Groups</h3>
+        <div class="groups" data-exp="c"></div>
+        <figure>
+          <div class="fig"><svg id="gels" viewBox="0 0 860 300" role="img" aria-label="gel allocation per group and day"></svg></div>
+          <figcaption>Gels per run, for each cell line. Each circle is one 150 µL gel. On each day, 3 gels per group go to the rheometer (R) and 3 to WST-1 (P). Cell-free gels serve as the WST-1 blank. About 96 gels per run for each cell line.</figcaption>
+        </figure>
+        <div class="two">
+          <figure>
+            <div class="fig"><svg id="delta" viewBox="0 0 400 240" role="img" aria-label="the comparison that matters"></svg></div>
+            <figcaption>What we compare: the change from Day 0 to Day 7 in gels with cells versus cell-free gels, not the value on a single day. Example shape, not data.</figcaption>
+          </figure>
+          <dl class="spec" style="align-content:start">
+            <dt>Gels</dt><dd>GelMA 5% and 10%, LAP 0.1%, 150 µL. One GelMA lot for the whole month.</dd>
+            <dt>Cell density</dt><dd>1 × 10<sup>5</sup> cells/mL for both lines.</dd>
+            <dt>Day 0</dt><dd>Read right after casting and the first medium change. Write down the exact time.</dd>
+            <dt>Cell-free gels</dt><dd>Same recipe, lot, light, medium and incubator. Measure them in the same rheometer session as the matching cell-laden gels.</dd>
+            <dt>Rheology</dt><dd>Same settings as our previous cell-laden GelMA measurements. Do not change geometry, strain or frequency during the month.</dd>
+            <dt>Optional</dt><dd>Live/dead image of one extra gel per cell-laden group on Day 7.</dd>
+            <dt>Replicates</dt><dd>3 gels per group per readout per day; 2 independent runs.</dd>
+          </dl>
+        </div>
+        <p class="okbox"><b>Success:</b> cells grow in both gels; the 5% and 10% growth curves separate by Day 3 or Day 7; and the Day 0→7 stiffness change of cell-laden gels differs from that of cell-free gels in the same direction in both runs.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= D · DATA ================= -->
+  <section id="tab-pd" class="tabpane" hidden style="display:grid;gap:18px">
+    <div class="section-title"><h2>Raw data checklist</h2></div>
+    <div id="tasks-pd" class="phase"></div>
+    <details class="guide blue howto" open>
+      <summary>D · What to send back, and why</summary>
+      <div>
+        <p class="q">Every result must reach the PI as raw data, with enough context to analyse it without asking.</p>
+        <dl class="spec">
+          <dt>Raw files</dt><dd>Plate reader exports, rheometer exports, all images. Not only summaries.</dd>
+          <dt>Maps</dt><dd>A plate map or gel map for every plate and run.</dd>
+          <dt>Run record</dt><dd>Date, cell passage, GelMA lot, drug lots, light exposure, and anything that differed from the plan (also in the Log).</dd>
+        </dl>
+        <p class="why"><b>Why:</b> the PI fits the curves and runs the statistics. Missing maps or lot numbers make a run unusable.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ================= LOG ================= -->
+  <section id="tab-log" class="tabpane" hidden style="display:grid;gap:18px">
+    <div class="card">
+      <h2>New log entry</h2>
+      <form class="logform" id="logForm">
+        <label class="field">Date<input type="date" id="lgDate" required></label>
+        <label class="field">Phase<select id="lgPhase"></select></label>
+        <label class="field">Cell line<select id="lgLine"><option>both</option><option>FaDu</option><option>Detroit 562</option></select></label>
+        <label class="field" style="display:flex;gap:8px;align-items:center;flex-direction:row;padding-bottom:8px"><input type="checkbox" id="lgPI" style="width:18px;height:18px"> Needs PI answer</label>
+        <label class="field wide">What happened (result, problem, deviation from plan)<textarea id="lgText" required></textarea></label>
+        <div class="wide"><button class="btn" type="submit" id="lgBtn">Add entry</button></div>
+      </form>
+    </div>
+    <div class="section-title">
+      <h2>Entries</h2>
+      <div class="filters"><button type="button" id="lgOnlyPI" aria-pressed="false">Only waiting for PI</button></div>
+    </div>
+    <div id="logList" style="display:grid;gap:10px"></div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ================= backend (Supabase, password-checked RPCs) ================= */
+const SB_URL="https://nmigmrqtbqzkojyedkzv.supabase.co";
+const SB_KEY="sb_publishable_Tvlxqw3Q0wPToe4QNi6HOA_1q3TAeMq";
+const STUDY="hnscc-pilot-m1";
+const POLL_MS=20000;
+
+async function rpc(fn,args){
+  let r;
+  try{
+    r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:"POST",headers:{"apikey":SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(args)});
+  }catch(e){const err=new Error("offline");err.offline=true;throw err;}
+  if(!r.ok){let m="";try{m=(await r.json()).message||""}catch(e){}
+    const err=new Error(m||("http "+r.status));err.status=r.status;err.badPass=/bad_password/.test(m);throw err;}
+  return r.json();
+}
+
+/* ================= plan structure ================= */
+const LINES=[{k:"fadu",n:"FaDu"},{k:"d562",n:"Detroit 562"}];
+const BOTH=["FaDu","Detroit 562"];
+const PHASES=[
+  {id:"p0",name:"0 · Purchasing & setup",color:"--p0"},
+  {id:"pa",name:"A · 2D drug curves",color:"--pa"},
+  {id:"pb",name:"B · Scratch assay",color:"--pb"},
+  {id:"pc",name:"C · 3D GelMA",color:"--pc"},
+  {id:"pd",name:"D · Data delivery",color:"--pd"}];
+/* prep: one-off tasks */
+const TASKS=[];
+const add=(id,name,purchase,labels)=>TASKS.push({id,phase:"p0",name,purchase:!!purchase,labels});
+add("buy-cis","Cisplatin",1,["Ordered","Received"]);
+add("buy-def","Defactinib",1,["Ordered","Received"]);
+add("buy-mmc","Mitomycin C",1,["Ordered","Received"]);
+add("buy-wst","WST-1 reagent",1,["Ordered","Received"]);
+add("gelma-lot","GelMA lot reserved and details recorded",0,["Reserved","Recorded"]);
+/* experiments: runs per cell line, duration in days (planned start → last step), steps = protocol checkpoints */
+const EXPS=[
+  {id:"a1",phase:"pa",name:"A1 · Cisplatin IC50",runs:3,dur:5,steps:["Seeded","Cisplatin added","Read (72 h)"]},
+  {id:"a2",phase:"pa",name:"A2 · Defactinib safe dose",runs:3,dur:3,steps:["Seeded","Defactinib added","Read (24 h)"]},
+  {id:"b1",phase:"pb",name:"B1 · Mitomycin C check",runs:1,dur:3,steps:["Seeded","MMC 2 h + count","24 h count"]},
+  {id:"b2",phase:"pb",name:"B2 · Scratch assay",runs:2,dur:4,steps:["Seeded","Scratch + 0 h image","Wound closed"]},
+  {id:"c",phase:"pc",name:"C · 3D GelMA",runs:2,dur:8,steps:["Cast + Day 0","Day 1","Day 3","Day 7"]}];
+const EXP=Object.fromEntries(EXPS.map(x=>[x.id,x]));
+const LOGPH=[{id:"p0",name:"0 · Prep"},...EXPS.map(x=>({id:x.id,name:x.name})),{id:"pd",name:"D · Data"},{id:"gen",name:"General"}];
+const TABS=["overview","p0","pa","pb","pc","pd","log"];
+
+/* ================= state ================= */
+let myId="", pass="";
+const tstate={}, rstate={}, meta={};
+let logs=[], controls=[];
+let onlyPI=false;
+
+/* ================= dates ================= */
+const pad=n=>String(n).padStart(2,"0");
+const todayISO=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const toUTC=iso=>{const [y,m,d]=iso.split("-").map(Number);return Date.UTC(y,m-1,d)};
+const addDays=(iso,n)=>{const t=new Date(toUTC(iso)+n*86400000);return `${t.getUTCFullYear()}-${pad(t.getUTCMonth()+1)}-${pad(t.getUTCDate())}`};
+const diffDays=(a,b)=>Math.round((toUTC(a)-toUTC(b))/86400000);
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fmt=iso=>{if(!iso)return "—";const [,m,d]=iso.split("-").map(Number);return `${d} ${MON[m-1]}`};
+const fmtTime=ms=>{if(!ms)return "";const d=new Date(ms);return `${d.getDate()} ${MON[d.getMonth()]} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+function ago(ms){if(!ms)return "";const s=(Date.now()-ms)/1000;
+  if(s<90)return "just now";if(s<3600)return Math.round(s/60)+" min ago";if(s<86400)return Math.round(s/3600)+" h ago";
+  const d=Math.round(s/86400);return d===1?"yesterday":d+" days ago";}
+
+/* ================= helpers ================= */
+const $=s=>document.querySelector(s);
+const el=(tag,attrs,...kids)=>{const e=document.createElement(tag);if(attrs)for(const k in attrs){const v=attrs[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k==="style")e.style.cssText=v;else e.setAttribute(k,v===true?"":v);}kids.forEach(c=>c!=null&&e.append(c));return e;};
+function showBanner(msg){const b=$("#banner");b.textContent=msg;b.hidden=!msg}
+const phColor=id=>(PHASES.find(p=>p.id===id)||{color:"--p0"}).color;
+const logPhaseName=id=>(LOGPH.find(p=>p.id===id)||PHASES.find(p=>p.id===id)||{name:id||""}).name;
+
+/* ================= runs ================= */
+function allRuns(){
+  const out=[];
+  EXPS.forEach(x=>LINES.forEach(L=>{
+    for(let i=1;i<=x.runs;i++) out.push({id:`${x.id}-${L.k}-${i}`,exp:x,line:L,n:i,extra:false});
+    Object.values(rstate).filter(s=>s.extra&&s.exp===x.id&&s.line===L.k).sort((a,b)=>a.n-b.n)
+      .forEach(s=>out.push({id:s.id,exp:x,line:L,n:s.n,extra:true}));
+  }));
+  return out;
+}
+const runLabel=r=>`${r.exp.id.toUpperCase()} · ${r.line.n} · Run ${r.n}`;
+const runEnd=(r,s)=>s.plan?addDays(s.plan,r.exp.dur-1):null;
+const stepsDone=(r,s)=>(s.steps||[]).slice(0,r.exp.steps.length).filter(Boolean).length;
+const finished=r=>{const s=rstate[r.id]||{};return !s.failed&&stepsDone(r,s)===r.exp.steps.length;};
+function rStatus(r){
+  const s=rstate[r.id]||{}, k=r.exp.steps.length, n=stepsDone(r,s), today=todayISO(), end=runEnd(r,s);
+  if(s.failed) return {k:"fail",label:"Failed"};
+  if(n===k) return s.data?{k:"done",label:"Done"}:{k:"data",label:"Data pending"};
+  if(n>0) return end&&today>end?{k:"late",label:"Overdue"}:{k:"prog",label:"At: "+r.exp.steps[n-1]};
+  if(!s.plan) return {k:"need",label:"Date needed"};
+  if(today>s.plan) return {k:"late",label:"Late start"};
+  return {k:"",label:"Planned "+fmt(s.plan)};
+}
+function tStatus(t){
+  const s=tstate[t.id]||{}, today=todayISO();
+  if(s.na) return {k:"na",label:"N/A"};
+  if(s.done) return {k:"done",label:t.labels[1]};
+  if(!s.plan) return s.started?{k:"prog",label:t.labels[0]}:{k:"need",label:"Date needed"};
+  if(today>s.plan) return {k:"late",label:"Late"};
+  if(s.started) return {k:"prog",label:t.labels[0]};
+  return {k:"",label:"Expected "+fmt(s.plan)};
+}
+
+/* ================= writes ================= */
+const pending={}; const inflight={}; let writeSeq=0, saveErr=false, lastSaved=0;
+function save(id,kind,data,deleted){
+  meta[id]={by:myId||null,at:Date.now()};
+  pending[id]={kind,data,deleted:!!deleted,v:(pending[id]?pending[id].v:0)+1};
+  showSync(); flush();
+}
+async function flush(){
+  for(const id of Object.keys(pending)){
+    if(inflight[id]) continue;
+    const p=pending[id]; inflight[id]=true; showSync();
+    try{
+      const ts=await rpc("hnscc_tracker_put",{p_study:STUDY,p_pass:pass,p_id:id,p_kind:p.kind,p_data:p.data,p_by:myId||null,p_deleted:p.deleted});
+      writeSeq++; lastSaved=Date.now(); saveErr=false;
+      if(pending[id]&&pending[id].v===p.v) delete pending[id];
+      meta[id]={by:myId||null,at:Date.parse(ts)||Date.now()};
+    }catch(e){
+      saveErr=true;
+      if(e.badPass){delete inflight[id];lock("The password was changed. Enter the new one.");return;}
+      setTimeout(flush,5000);
+    }finally{delete inflight[id];}
+    showSync();
+  }
+  if(Object.keys(pending).some(id=>!inflight[id])&&!saveErr) flush();
+}
+function patchTask(t,patch){tstate[t.id]=Object.assign({},tstate[t.id]||{},patch);save(t.id,"task",tstate[t.id]);renderAll();}
+function patchRun(r,patch){
+  const base=rstate[r.id]||{id:r.id,exp:r.exp.id,line:r.line.k,n:r.n,extra:r.extra};
+  rstate[r.id]=Object.assign({},base,patch);save(r.id,"run",rstate[r.id]);renderAll();
+}
+
+/* ================= reads (poll) ================= */
+let pulling=false, lastSync=0;
+function apply(items){
+  const T={},R={},M={},L=[],C=[];
+  items.forEach(it=>{
+    M[it.id]={by:it.by,at:Date.parse(it.at)};
+    if(it.deleted) return;
+    const d=it.data||{};
+    if(it.kind==="task") T[it.id]=d;
+    else if(it.kind==="run") R[it.id]=Object.assign({},d,{id:it.id});
+    else if(it.kind==="log") L.push(Object.assign({},d,{id:it.id}));
+    else if(it.kind==="control") C.push(Object.assign({},d,{id:it.id}));
+  });
+  for(const id in pending){const p=pending[id]; if(meta[id]) M[id]=meta[id];
+    if(p.kind==="task"){if(p.deleted)delete T[id];else T[id]=p.data;}
+    else if(p.kind==="run"){if(p.deleted)delete R[id];else R[id]=p.data;}
+    else{const arr=p.kind==="log"?L:C;const k=arr.findIndex(x=>x.id===id);if(k>=0)arr.splice(k,1);if(!p.deleted)arr.push(Object.assign({},p.data,{id}));}
+  }
+  for(const k in tstate)delete tstate[k]; Object.assign(tstate,T);
+  for(const k in rstate)delete rstate[k]; Object.assign(rstate,R);
+  for(const k in meta)delete meta[k]; Object.assign(meta,M);
+  logs=L; controls=C;
+}
+async function pull(){
+  if(!pass||pulling) return;
+  pulling=true; const w0=writeSeq;
+  try{
+    const res=await rpc("hnscc_tracker_load",{p_study:STUDY,p_pass:pass});
+    if(writeSeq!==w0||Object.keys(inflight).length){pulling=false;setTimeout(pull,1500);return;}
+    apply(res.items||[]); lastSync=Date.now(); renderAll();
+  }catch(e){
+    if(e.badPass){lock("The password was changed. Enter the new one.");}
+  }finally{pulling=false;showSync();}
+}
+function showSync(){
+  const n=Object.keys(pending).length;
+  let msg;
+  if(n&&saveErr) msg="Not saved yet — no connection, retrying…";
+  else if(n) msg="Saving…";
+  else if(lastSaved) msg="Saved "+fmtTime(lastSaved);
+  else if(lastSync) msg="Up to date "+fmtTime(lastSync);
+  else msg="Connecting…";
+  const s=$("#saveState"); s.textContent=msg; s.classList.toggle("warn",!!(n&&saveErr));
+}
+
+/* ================= tabs ================= */
+function showTab(name){
+  if(!TABS.includes(name)) name="overview";
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===name)));
+  TABS.forEach(t=>{$("#tab-"+t).hidden=t!==name});
+  try{localStorage.setItem("tracker-tab",name)}catch(e){}
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{showTab(b.dataset.tab);window.scrollTo(0,0)}));
+
+/* ================= overview ================= */
+function itemLabel(id){
+  const t=TASKS.find(x=>x.id===id); if(t) return t.name;
+  const r=allRuns().find(x=>x.id===id); if(r) return runLabel(r);
+  const l=logs.find(x=>x.id===id); if(l) return "Log: "+(l.text||"").slice(0,60)+((l.text||"").length>60?"…":"");
+  const c=controls.find(x=>x.id===id); if(c) return "Control added: "+(c.treatment||"");
+  return null;
+}
+function tlRange(runs){
+  const today=todayISO(); let lo=addDays(today,-3), hi=addDays(today,21);
+  const see=d=>{if(d){if(d<lo)lo=d;if(d>hi)hi=d;}};
+  TASKS.forEach(t=>{const s=tstate[t.id]||{};[s.plan,s.startDate,s.doneDate].forEach(see)});
+  runs.forEach(r=>{const s=rstate[r.id]||{};see(s.plan);see(runEnd(r,s));(s.steps||[]).forEach(see)});
+  lo=addDays(lo,-1); hi=addDays(hi,2);
+  if(diffDays(hi,lo)>90) hi=addDays(lo,90);
+  return {lo,n:diffDays(hi,lo)+1};
+}
+function renderOverview(){
+  const today=todayISO(), runs=allRuns(), act=runs.filter(r=>!(rstate[r.id]||{}).failed);
+  const fin=act.filter(finished), prog=act.filter(r=>rStatus(r).k==="prog");
+  const lateR=act.filter(r=>rStatus(r).k==="late"), lateT=TASKS.filter(t=>tStatus(t).k==="late");
+  const dataP=act.filter(r=>rStatus(r).k==="data");
+  const tAct=TASKS.filter(t=>!(tstate[t.id]||{}).na), tDone=tAct.filter(t=>(tstate[t.id]||{}).done);
+  const waiting=logs.filter(l=>l.needsPI&&!l.reply).length;
+  const lastAt=Math.max(0,...Object.values(meta).map(m=>m.at||0));
+  const pct=act.length?Math.round(fin.length/act.length*100):0;
+
+  const k=$("#kpis"); k.replaceChildren();
+  const tile=(big,label,alert,extra)=>{const t=el("div",{class:"kpi"+(alert?" alert":"")},el("b",{text:big}),el("span",{text:label}));if(extra)t.append(extra);k.append(t)};
+  tile(pct+"%",`${fin.length} of ${act.length} runs finished`,false,el("div",{class:"bar",style:"margin-top:6px"},el("i",{style:`width:${pct}%`})));
+  tile(String(prog.length),"runs in progress now");
+  tile(String(lateR.length+lateT.length),"late or overdue",lateR.length+lateT.length>0);
+  tile(`${tDone.length}/${tAct.length}`,"prep items done");
+  tile(String(dataP.length),"finished runs with data not uploaded",dataP.length>0);
+  tile(String(waiting),"questions waiting for PI",waiting>0);
+  tile(lastAt?ago(lastAt):"—","last update by anyone",!lastAt||Date.now()-lastAt>3*86400000);
+
+  /* needs attention */
+  const at=$("#attention"); at.replaceChildren();
+  const row=(pill,cls,label,extra)=>at.append(el("div",{class:"arow"},el("span",{class:"pill "+cls,text:pill}),el("span",{text:label}),extra?el("span",{class:"small muted",text:extra}):null));
+  lateT.forEach(t=>row("Late","late",t.name,"expected "+fmt((tstate[t.id]||{}).plan)));
+  lateR.forEach(r=>{const s=rstate[r.id]||{};row(rStatus(r).label,"late",runLabel(r),`planned ${fmt(s.plan)} → ${fmt(runEnd(r,s))}`)});
+  dataP.forEach(r=>row("Data pending","data",runLabel(r),"finished, data not uploaded yet"));
+  act.filter(r=>{const s=rstate[r.id]||{};return s.plan&&!stepsDone(r,s)&&s.plan>=today&&diffDays(s.plan,today)<=3}).forEach(r=>row("Starts "+fmt(rstate[r.id].plan),"",runLabel(r)));
+  TASKS.filter(t=>tStatus(t).k==="need").forEach(t=>row("Date needed","need",t.name));
+  EXPS.forEach(x=>{const n=act.filter(r=>r.exp===x&&rStatus(r).k==="need").length;if(n)row("Date needed","need",x.name,`${n} run${n>1?"s":""} without a planned start`)});
+  if(!at.children.length) at.append(el("div",{class:"empty",text:"Nothing late, no missing dates, nothing due to start in the next 3 days."}));
+
+  /* latest activity */
+  const ac=$("#activity"); ac.replaceChildren();
+  const recent=Object.entries(meta).filter(([id,m])=>m.at&&itemLabel(id)).sort((a,b)=>b[1].at-a[1].at).slice(0,8);
+  if(!recent.length) ac.append(el("div",{class:"empty",text:"No updates yet."}));
+  recent.forEach(([id,m])=>ac.append(el("div",{class:"act"},el("span",{class:"mono small muted",text:ago(m.at)}),el("span",{text:itemLabel(id)}),el("span",{class:"small muted",text:m.by?"by "+m.by:""}))));
+
+  /* timeline */
+  const {lo,n}=tlRange(runs); const tl=$("#timeline"); tl.replaceChildren();
+  tl.style.gridTemplateColumns=`230px repeat(${n},24px)`; tl.style.minWidth=(230+24*n)+"px";
+  tl.append(el("div",{class:"h",style:"text-align:left;padding-left:8px"},"Task / run"));
+  const days=[]; for(let d=0;d<n;d++) days.push(addDays(lo,d));
+  days.forEach((iso,d)=>{const dt=new Date(toUTC(iso)),isMon=dt.getUTCDay()===1,dom=dt.getUTCDate();
+    tl.append(el("div",{class:"h"+(isMon?" wk":"")+(iso===today?" td":""),title:fmt(iso)},dom===1||d===0?MON[dt.getUTCMonth()]:String(dom)));});
+  const line=(label,color,dim,pStart,pEnd,aStart,aEnd,isLate)=>{
+    tl.append(el("div",{class:"lab",title:label,style:dim?"opacity:.5":""},el("span",{class:"dot",style:`background:var(${color})`}),el("span",{text:label})));
+    days.forEach(iso=>{const isMon=new Date(toUTC(iso)).getUTCDay()===1;
+      const c=el("div",{class:"cell"+(isMon?" wk":"")+(iso===today?" td":"")});
+      if(pStart&&iso>=pStart&&iso<=pEnd) c.append(el("span",{class:"pl"+(dim?" na":"")}));
+      if(!dim&&aStart&&iso>=aStart&&iso<=aEnd) c.append(el("span",{class:"ac"+(isLate&&pEnd&&iso>pEnd?" late":"")}));
+      tl.append(c);});
+  };
+  tl.append(el("div",{class:"ph"},PHASES[0].name));
+  TASKS.forEach(t=>{const s=tstate[t.id]||{};
+    line(t.name+(s.na?" (N/A)":(s.plan?"":" · no date")),"--p0",!!s.na,s.plan,s.plan,s.started?s.startDate:null,s.done?(s.doneDate||s.startDate):today,true);});
+  EXPS.forEach(x=>{
+    tl.append(el("div",{class:"ph"},x.name));
+    runs.filter(r=>r.exp===x).forEach(r=>{const s=rstate[r.id]||{}, st=(s.steps||[]).filter(Boolean).sort();
+      const aS=st[0]||null, aE=finished(r)?st[st.length-1]:today;
+      line(`${r.line.n} · Run ${r.n}`+(s.failed?" (failed)":(s.plan?"":" · no date")),phColor(x.phase),!!s.failed,s.plan,runEnd(r,s),aS,aE,true);});
+  });
+
+  /* progress by experiment */
+  const pp=$("#phaseProg"); pp.replaceChildren();
+  EXPS.forEach(x=>{
+    const rs=act.filter(r=>r.exp===x), dn=rs.filter(finished).length, up=rs.filter(r=>(rstate[r.id]||{}).data).length;
+    const perLine=LINES.map(L=>{const a=rs.filter(r=>r.line===L);return `${L.n} ${a.filter(finished).length}/${a.length}`}).join(" · ");
+    const lt=rs.filter(r=>rStatus(r).k==="late").length;
+    pp.append(el("div",{style:"display:grid;gap:4px"},
+      el("div",{style:"display:flex;justify-content:space-between;gap:8px;font-size:14px"},el("b",{text:x.name}),el("span",{class:"mono small",text:`${dn}/${rs.length}`})),
+      el("div",{class:"bar"},el("i",{style:`width:${rs.length?Math.round(dn/rs.length*100):0}%;background:var(${phColor(x.phase)})`})),
+      el("div",{class:"small muted",text:`${perLine} · data uploaded ${up}/${rs.length}${lt?` · ${lt} late`:""}`})));
+  });
+
+  /* purchases */
+  const pu=$("#purch"); pu.replaceChildren();
+  TASKS.forEach(t=>{const s=tstate[t.id]||{}, st=tStatus(t);
+    pu.append(el("tr",null,el("td",null,el("span",{text:t.name+" "}),el("span",{class:"pill "+st.k,text:st.label})),
+      el("td",{class:"mono small",text:s.started?fmt(s.startDate):"—"}),el("td",{class:"mono small",text:s.done?fmt(s.doneDate):"—"})));});
+
+  /* waiting for PI */
+  const wp=$("#waitPI"); wp.replaceChildren();
+  const w=logs.filter(l=>l.needsPI&&!l.reply);
+  if(!w.length) wp.append(el("div",{class:"empty",text:"No open questions for the PI."}));
+  w.forEach(l=>wp.append(el("div",{style:"display:grid;gap:2px"},el("div",{class:"small muted",text:`${fmt(l.date)} · ${logPhaseName(l.phase)} · ${l.line||""} · ${l.by||""}`}),el("div",{text:l.text}))));
+  const pc=$("#piCount"); pc.textContent=String(waiting); pc.hidden=!waiting;
+}
+
+/* ================= prep tasks ================= */
+function renderTasks(){
+  const box=$("#tasks-p0"); box.replaceChildren();
+  TASKS.forEach(t=>box.append(taskCard(t)));
+}
+function taskCard(t){
+  const s=tstate[t.id]||{}, st=tStatus(t), m=meta[t.id];
+  const card=el("div",{class:"task"+(s.done?" is-done":"")+(s.na?" is-na":""),style:"border-left-color:var(--p0)"});
+  const naId=t.id+"-na"; const na=el("input",{type:"checkbox",id:naId}); na.checked=!!s.na;
+  na.addEventListener("change",()=>patchTask(t,{na:na.checked}));
+  card.append(el("div",{class:"t-name"},el("span",{class:"nm",text:t.purchase?`${t.name}: order and receive`:t.name}),
+    el("div",{class:"meta"},el("span",{class:"pill "+st.k,text:st.label})),
+    el("label",{class:"na-box",for:naId},na,"N/A (not needed)")));
+  const pd=el("input",{type:"date","aria-label":"Expected by"}); pd.value=s.plan||""; pd.disabled=!!s.na;
+  pd.addEventListener("change",()=>patchTask(t,{plan:pd.value||null}));
+  card.append(el("div",{class:"chk plan"},el("span",{class:"ck"},t.purchase?"Expected arrival":"Expected by"),pd));
+  card.append(chkBox(t,"started","startDate",t.labels[0]));
+  card.append(chkBox(t,"done","doneDate",t.labels[1]));
+  const nt=el("input",{type:"text",class:"tnote","aria-label":"Notes for "+t.name,placeholder:t.purchase?"Note (optional)":"Lot no. / note (optional)"}); nt.value=s.notes||"";
+  nt.addEventListener("change",()=>{if(((tstate[t.id]||{}).notes||"")!==nt.value)patchTask(t,{notes:nt.value})});
+  card.append(el("div",{class:"t-notes"},nt,el("div",{class:"who",text:m&&m.at?`Updated ${fmtTime(m.at)}${m.by?" by "+m.by:""}`:""})));
+  return card;
+}
+function chkBox(t,flag,dateKey,label){
+  const s=tstate[t.id]||{}, id=`${t.id}-${flag}`, ro=!!s.na;
+  const cb=el("input",{type:"checkbox",id}); cb.checked=!!s[flag]; cb.disabled=ro;
+  const dt=el("input",{type:"date","aria-label":label+" date"}); dt.value=s[dateKey]||""; dt.disabled=ro||!s[flag];
+  cb.addEventListener("change",()=>{
+    const patch={[flag]:cb.checked,[dateKey]:cb.checked?(s[dateKey]||todayISO()):null};
+    if(flag==="done"&&cb.checked&&!s.started){patch.started=true;patch.startDate=s.startDate||todayISO();}
+    if(flag==="started"&&!cb.checked){patch.done=false;patch.doneDate=null;}
+    patchTask(t,patch);
+  });
+  dt.addEventListener("change",()=>{if(dt.value)patchTask(t,{[dateKey]:dt.value})});
+  return el("div",{class:"chk"},el("label",{class:"ck",for:id},cb,label),dt);
+}
+
+/* ================= runs per experiment ================= */
+function renderRuns(){
+  const runs=allRuns();
+  ["pa","pb","pc"].forEach(ph=>{
+    const box=$("#tasks-"+ph); box.replaceChildren();
+    EXPS.filter(x=>x.phase===ph).forEach(x=>{
+      const rs=runs.filter(r=>r.exp===x), act=rs.filter(r=>!(rstate[r.id]||{}).failed), dn=act.filter(finished).length;
+      const sec=el("div",{class:"exp"});
+      const lineSel=el("select",{"aria-label":"Cell line for the extra run"},...LINES.map(L=>el("option",{value:L.k},L.n)));
+      const addBtn=el("button",{type:"button",class:"btn ghost small"},"+ Add a run");
+      addBtn.addEventListener("click",()=>{
+        const L=LINES.find(l=>l.k===lineSel.value), n=Math.max(0,...rs.filter(r=>r.line===L).map(r=>r.n))+1;
+        const id=`${x.id}-${L.k}-x${Date.now().toString(36)}`;
+        rstate[id]={id,exp:x.id,line:L.k,n,extra:true}; save(id,"run",rstate[id]); renderAll();
+      });
+      sec.append(el("div",{class:"exp-head"},
+        el("div",{style:"display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"},el("h3",{text:x.name}),el("span",{class:"mono small muted",text:`${dn}/${act.length} finished · ${x.dur} days per run`})),
+        el("div",{class:"addrun"},lineSel,addBtn)));
+      LINES.forEach(L=>rs.filter(r=>r.line===L).forEach(r=>sec.append(runRow(r))));
+      box.append(sec);
+    });
+  });
+}
+function runRow(r){
+  const s=rstate[r.id]||{}, st=rStatus(r), steps=s.steps||[], m=meta[r.id], ro=!!s.failed;
+  const row=el("div",{class:"run"+(st.k==="done"?" is-done":"")+(s.failed?" is-na":""),style:`border-left-color:var(${phColor(r.exp.phase)})`});
+  const top=el("div",{class:"r-top"});
+  top.append(el("div",{class:"r-name"},el("b",{text:`${r.line.n} · Run ${r.n}`}),el("span",{class:"pill "+st.k,text:st.label})));
+  const pd=el("input",{type:"date","aria-label":"Planned start"}); pd.value=s.plan||""; pd.disabled=ro;
+  pd.addEventListener("change",()=>patchRun(r,{plan:pd.value||null}));
+  top.append(el("label",{class:"r-plan"},el("span",{text:"Planned start"}),pd,el("small",{text:s.plan?"→ "+fmt(runEnd(r,s)):""})));
+  const ps=el("input",{type:"text",class:"r-pass",inputmode:"numeric",placeholder:"P#","aria-label":"Passage",title:"Cell passage"}); ps.value=s.passage||""; ps.disabled=ro;
+  ps.addEventListener("change",()=>patchRun(r,{passage:ps.value.trim()}));
+  const nt=el("input",{type:"text",class:"r-note",placeholder:"Note (optional)","aria-label":"Note"}); nt.value=s.note||"";
+  nt.addEventListener("change",()=>patchRun(r,{note:nt.value}));
+  top.append(ps,nt);
+  const fid=r.id+"-fail"; const fb=el("input",{type:"checkbox",id:fid}); fb.checked=!!s.failed;
+  fb.addEventListener("change",()=>patchRun(r,{failed:fb.checked}));
+  top.append(el("label",{class:"na-box",for:fid,title:"Tick if this run failed and will be repeated (add a run below the list)"},fb,"Failed"));
+  if(r.extra&&!stepsDone(r,s)){const x=el("button",{type:"button",class:"x",title:"Remove this extra run","aria-label":"Remove this extra run"},"✕");
+    x.addEventListener("click",()=>{delete rstate[r.id];save(r.id,"run",{},true);renderAll();});top.append(x);}
+  row.append(top);
+  const sb=el("div",{class:"r-steps"});
+  r.exp.steps.forEach((lab,i)=>{
+    const id=`${r.id}-s${i}`, on=!!steps[i];
+    const cb=el("input",{type:"checkbox",id}); cb.checked=on; cb.disabled=ro;
+    cb.addEventListener("change",()=>{
+      const a=r.exp.steps.map((_,j)=>steps[j]||null), t=todayISO();
+      if(cb.checked){for(let j=0;j<=i;j++) if(!a[j]) a[j]=t;} else {for(let j=i;j<a.length;j++) a[j]=null;}
+      patchRun(r,{steps:a});
+    });
+    const chip=el("span",{class:"step"+(on?" on":"")},el("label",{for:id},cb,el("span",{text:lab})));
+    if(on){const dt=el("input",{type:"date","aria-label":lab+" date"});dt.value=steps[i];dt.disabled=ro;
+      dt.addEventListener("change",()=>{if(!dt.value)return;const a=r.exp.steps.map((_,j)=>steps[j]||null);a[i]=dt.value;patchRun(r,{steps:a});});
+      chip.append(dt);}
+    sb.append(chip);
+    if(i<r.exp.steps.length-1) sb.append(el("span",{class:"arrow","aria-hidden":"true"},"›"));
+  });
+  sb.append(dataChip(r,s,ro));
+  row.append(sb);
+  if(m&&m.at) row.append(el("div",{class:"r-who",text:`Updated ${fmtTime(m.at)}${m.by?" by "+m.by:""}`}));
+  return row;
+}
+function dataChip(r,s,ro){
+  const id=r.id+"-data", on=!!s.data;
+  const cb=el("input",{type:"checkbox",id}); cb.checked=on; cb.disabled=ro;
+  cb.addEventListener("change",()=>patchRun(r,{data:cb.checked?todayISO():null}));
+  return el("span",{class:"step data"+(on?" on":"")},el("label",{for:id},cb,el("span",{text:"Data uploaded"+(on?" "+fmt(s.data):"")})));
+}
+
+/* ================= D · data checklist ================= */
+function renderData(){
+  const box=$("#tasks-pd"); box.replaceChildren();
+  const runs=allRuns().filter(r=>!(rstate[r.id]||{}).failed);
+  const fin=runs.filter(finished), up=runs.filter(r=>(rstate[r.id]||{}).data);
+  box.append(el("p",{class:"small muted",text:`${up.length} of ${runs.length} runs have their raw data uploaded · ${fin.length} runs finished at the bench. Tick here or in each run.`}));
+  const tb=el("tbody");
+  runs.forEach(r=>{const s=rstate[r.id]||{}, st=s.steps||[], last=st.filter(Boolean).sort().pop();
+    tb.append(el("tr",null,el("td",null,el("span",{class:"dot",style:`background:var(${phColor(r.exp.phase)});display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px`}),el("span",{text:runLabel(r)})),
+      el("td",{class:"small",text:`${stepsDone(r,s)}/${r.exp.steps.length} steps`}),
+      el("td",{class:"mono small",text:finished(r)?fmt(last):"—"}),
+      el("td",null,dataChip(r,s,false))));});
+  box.append(el("div",{class:"card"},el("div",{class:"tbl"},el("table",null,el("thead",null,el("tr",null,el("th",{text:"Run"}),el("th",{text:"Bench"}),el("th",{text:"Finished"}),el("th",{text:"Raw data"}))),tb))));
+}
+
+/* ================= log ================= */
+function renderLog(){
+  const list=$("#logList"); list.replaceChildren();
+  let ls=[...logs].sort((x,y)=>(y.date||"").localeCompare(x.date||"")||(y.at||0)-(x.at||0));
+  if(onlyPI) ls=ls.filter(l=>l.needsPI&&!l.reply);
+  if(!ls.length){list.append(el("div",{class:"empty",text:onlyPI?"No open questions for the PI.":"No entries yet. Add the first one above: what was done today, any problem, any change from the plan."}));return;}
+  ls.forEach(l=>{
+    const e=el("div",{class:"entry"+(l.needsPI&&!l.reply?" pi":"")});
+    const top=el("div",{class:"top"},el("b",{class:"mono",text:fmt(l.date)}),el("span",{text:logPhaseName(l.phase)}),el("span",{class:"chip",text:l.line||""}));
+    if(l.needsPI) top.append(el("span",{class:"pill "+(l.reply?"done":"late"),text:l.reply?"PI answered":"Needs PI"}));
+    top.append(el("span",{text:`${l.by||""} · ${fmtTime(l.at)}`}));
+    e.append(top,el("div",{class:"txt",text:l.text||""}));
+    if(l.reply) e.append(el("div",{class:"reply",text:`Reply (${l.replyBy||""}, ${fmtTime(l.replyAt)}): ${l.reply}`}));
+    if(l.needsPI&&!l.reply){
+      const ta=el("textarea",{placeholder:"Reply…","aria-label":"Reply",style:"width:100%;min-height:50px;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--ink)"});
+      const b=el("button",{class:"btn ghost",type:"button"},"Send reply");
+      b.addEventListener("click",()=>{const v=ta.value.trim();if(!v)return;
+        const body=Object.assign({},l,{reply:v,replyBy:myId||"",replyAt:Date.now()});delete body.id;
+        const k=logs.findIndex(x=>x.id===l.id);logs[k]=Object.assign({id:l.id},body);save(l.id,"log",body);ta.blur();renderAll();});
+      e.append(el("div",{style:"display:grid;gap:6px"},ta,el("div",null,b)));
+    }
+    list.append(e);
+  });
+}
+function setupLogForm(){
+  const sel=$("#lgPhase"); LOGPH.forEach(p=>sel.append(el("option",{value:p.id},p.name)));
+  $("#lgDate").value=todayISO();
+  $("#logForm").addEventListener("submit",ev=>{
+    ev.preventDefault();
+    const text=$("#lgText").value.trim(); if(!text) return;
+    const body={date:$("#lgDate").value||todayISO(),phase:sel.value,line:$("#lgLine").value,text,needsPI:$("#lgPI").checked,reply:"",by:myId||"",at:Date.now()};
+    const id="log-"+crypto.randomUUID();
+    logs.push(Object.assign({id},body)); save(id,"log",body);
+    $("#lgText").value=""; $("#lgPI").checked=false; renderAll();
+  });
+  $("#lgOnlyPI").addEventListener("click",e=>{onlyPI=!onlyPI;e.currentTarget.setAttribute("aria-pressed",String(onlyPI));renderLog()});
+}
+
+/* ================= groups and controls ================= */
+const ROLE={test:"Test",neg:"Negative control",pos:"Positive control",ref:"Reference",blank:"Background"};
+const GROUPS={
+  a1:{n:"3 wells",rows:[
+    ["Vehicle (0.9% NaCl, same volume as 100 µM)","neg"],
+    ...["0.03","0.1","0.3","1","3","10","30","100"].map(c=>[`Cisplatin ${c} µM`,"test"]),
+    ["Blank (medium only, no cells)","blank"],
+    ["Time-zero plate (vehicle, read when drug is added)","ref"]]},
+  a2:{n:"3 wells",rows:[
+    ["Vehicle (0.1% DMSO)","neg"],
+    ...["0.03","0.1","0.3","1","3","10"].map(c=>[`Defactinib ${c} µM`,"test"]),
+    ["Blank (medium only, no cells)","blank"]]},
+  b1:{n:"3 wells",rows:[
+    ["No mitomycin C","neg"],
+    ["Mitomycin C 5 µg/mL, 2 h","test"],
+    ["Mitomycin C 10 µg/mL, 2 h","test"]]},
+  b2:{n:"3 wells",rows:[
+    ["Vehicle (0.1% DMSO) + mitomycin C","neg"],
+    ["Defactinib, safe dose from A2 + mitomycin C","test"],
+    ["Defactinib, next lower dose + mitomycin C","test"]]},
+  c:{n:"3 gels per readout per day",rows:[
+    ["GelMA 5% with cells","test"],
+    ["GelMA 5% without cells","ref"],
+    ["GelMA 10% with cells","test"],
+    ["GelMA 10% without cells","ref"]]}
+};
+function renderGroups(){
+  document.querySelectorAll(".groups").forEach(box=>{
+    const exp=box.dataset.exp, g=GROUPS[exp]; box.replaceChildren();
+    const tbl=el("table",{class:"gtab"});
+    tbl.append(el("thead",null,el("tr",null,el("th",{text:"#"}),el("th",{text:"Group"}),el("th",{text:"Role"}),el("th",{text:"FaDu"}),el("th",{text:"Detroit 562"}),el("th",{text:""}))));
+    const tb=el("tbody"); let i=0;
+    g.rows.forEach(([name,role])=>{i++;
+      tb.append(el("tr",{class:"r-"+role},el("td",{class:"mono small",text:String(i)}),el("td",{text:name}),el("td",null,el("span",{class:"role "+role,text:ROLE[role]})),
+        el("td",{class:"small",text:g.n}),el("td",{class:"small",text:g.n}),el("td")));
+    });
+    controls.filter(c=>c.exp===exp).sort((x,y)=>(x.at||0)-(y.at||0)).forEach(c=>{i++;
+      const lines=c.line==="both"?BOTH:[c.line];
+      const del=el("button",{type:"button",class:"x",title:"Remove this control","aria-label":"Remove this control"},"✕");
+      del.addEventListener("click",()=>{if(!window.confirm("Remove this control from the table?"))return;
+        controls=controls.filter(x=>x.id!==c.id);const body=Object.assign({},c);delete body.id;save(c.id,"control",body,true);renderAll();});
+      const nameCell=el("td",null,el("span",{text:c.treatment}),el("span",{class:"added",text:" added"+(c.by?" by "+c.by:"")}));
+      if(c.why) nameCell.append(el("div",{class:"small muted",text:c.why}));
+      tb.append(el("tr",{class:"r-"+c.type},el("td",{class:"mono small",text:String(i)}),nameCell,el("td",null,el("span",{class:"role "+c.type,text:ROLE[c.type]})),
+        el("td",{class:"small",text:lines.includes("FaDu")?g.n:"—"}),el("td",{class:"small",text:lines.includes("Detroit 562")?g.n:"—"}),el("td",null,del)));
+    });
+    tbl.append(tb); box.append(el("div",{class:"tbl"},tbl));
+    const typ=el("select",{"aria-label":"Control type"},el("option",{value:"neg"},"Negative control"),el("option",{value:"pos"},"Positive control"));
+    const ln=el("select",{"aria-label":"Cell line"},el("option",{value:"both"},"Both lines"),el("option",{value:"FaDu"},"FaDu"),el("option",{value:"Detroit 562"},"Detroit 562"));
+    const tr=el("input",{type:"text",placeholder:"Treatment, e.g. staurosporine 1 µM","aria-label":"Treatment"});
+    const why=el("input",{type:"text",placeholder:"Why this control (optional)","aria-label":"Why"});
+    const b=el("button",{type:"button",class:"btn"},"Add control");
+    b.addEventListener("click",()=>{const t=tr.value.trim();if(!t){tr.focus();return;}
+      const id="ctl-"+crypto.randomUUID(), body={exp,type:typ.value,line:ln.value,treatment:t,why:why.value.trim(),by:myId||"",at:Date.now()};
+      controls.push(Object.assign({id},body)); save(id,"control",body); tr.value=""; why.value=""; renderAll();});
+    box.append(el("div",{class:"addctl"},el("span",{class:"lbl",text:"Add controls you consider necessary (as many as needed):"}),typ,ln,tr,why,b));
+  });
+}
+
+/* ================= render guard: never redraw under a field being typed in ================= */
+let deferred=false;
+function typing(){const a=document.activeElement;return a&&((a.tagName==="INPUT"&&!["checkbox","radio","button","submit"].includes(a.type))||a.tagName==="TEXTAREA"||a.tagName==="SELECT");}
+function renderAll(){
+  renderOverview();
+  if(typing()){deferred=true;return;}
+  deferred=false; renderTasks(); renderRuns(); renderData(); renderLog(); renderGroups();
+}
+document.addEventListener("focusout",()=>setTimeout(()=>{if(deferred&&!typing())renderAll();},0));
+
+/* ================= static figures ================= */
+const NS="http://www.w3.org/2000/svg";
+function sv(svg,tag,attrs,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!==undefined)e.textContent=text;svg.appendChild(e);return e;}
+const T="fill:var(--ink)", M="fill:var(--muted)";
+function ladder(id,doses,refs,color,lo,hi,title){
+  const s=document.getElementById(id); const x0=40,x1=740,L=Math.log10(lo),H=Math.log10(hi);
+  const X=v=>x0+(Math.log10(v)-L)/(H-L)*(x1-x0), y=110;
+  sv(s,"text",{x:x0,y:18,"font-size":13,"font-weight":600,style:T},title);
+  sv(s,"line",{x1:x0,y1:y,x2:x1,y2:y,style:"stroke:var(--muted)"});
+  for(let p=Math.ceil(L);p<=H;p++){const v=Math.pow(10,p);sv(s,"line",{x1:X(v),y1:y-5,x2:X(v),y2:y+5,style:"stroke:var(--muted)"});sv(s,"text",{x:X(v),y:y+22,"text-anchor":"middle","font-size":11,style:M},v+" µM");}
+  doses.forEach(v=>sv(s,"circle",{cx:X(v),cy:y,r:6,style:`fill:var(${color})`}));
+  refs.forEach((r,i)=>{const yy=30+i*17;sv(s,"path",{d:`M${X(r[0])-6},${yy} L${X(r[0])+6},${yy} L${X(r[0])},${yy+9} Z`,style:"fill:var(--ink)"});sv(s,"line",{x1:X(r[0]),y1:yy+9,x2:X(r[0]),y2:y-8,style:"stroke:var(--ink);stroke-dasharray:2 3;stroke-opacity:.5"});const right=X(r[0])>x0+0.8*(x1-x0);sv(s,"text",{x:right?X(r[0])-9:X(r[0])+9,y:yy+8,"font-size":11,"text-anchor":right?"end":"start",style:T},r[1]);});
+  sv(s,"text",{x:x0,y:160,"font-size":11,style:M},"● tested concentration    ▼ published value");
+}
+ladder("ladder-cis",[0.03,0.1,0.3,1,3,10,30,100],[[1.5,"Detroit 562: 1.5 µM"],[2,"FaDu: 2 µM"],[7,"Detroit 562: 7 µM"],[13.1,"Detroit 562: 13 µM"]],"--cis",0.01,1000,"Cisplatin");
+ladder("ladder-def",[0.03,0.1,0.3,1,3,10],[[1,"1 µM: FAK and invasion inhibited (ovarian)"],[5,"5 µM: anti-migration (lung)"],[7.5,"5–7.5 µM: apoptosis (mesothelioma)"]],"--def",0.01,100,"Defactinib");
+(function(){
+  const s=document.getElementById("curve"); const x0=50,x1=380,y0=190,y1=20;
+  sv(s,"line",{x1:x0,y1:y0,x2:x1,y2:y0,style:"stroke:var(--muted)"});sv(s,"line",{x1:x0,y1:y0,x2:x0,y2:y1,style:"stroke:var(--muted)"});
+  sv(s,"text",{x:x0-8,y:y1+4,"text-anchor":"end","font-size":11,style:M},"100%");sv(s,"text",{x:x0-8,y:y0,"text-anchor":"end","font-size":11,style:M},"0%");
+  sv(s,"text",{x:(x0+x1)/2,y:y0+30,"text-anchor":"middle","font-size":11.5,style:M},"log cisplatin concentration →");
+  sv(s,"text",{x:14,y:(y0+y1)/2,"font-size":11.5,style:M,transform:`rotate(-90 14 ${(y0+y1)/2})`,"text-anchor":"middle"},"viability");
+  let d="";for(let i=0;i<=100;i++){const t=i/100,lx=-2+t*4,v=1/(1+Math.pow(10,lx*1.2)),x=x0+t*(x1-x0),y=y0-(0.05+0.92*v)*(y0-y1);d+=(i?"L":"M")+x.toFixed(1)+","+y.toFixed(1);}
+  sv(s,"path",{d,style:"fill:none;stroke:var(--cis);stroke-width:3"});
+  const xm=x0+0.5*(x1-x0),ym=y0-(0.05+0.46)*(y0-y1);
+  sv(s,"line",{x1:x0,y1:ym,x2:xm,y2:ym,style:"stroke:var(--ink);stroke-dasharray:3 3"});sv(s,"line",{x1:xm,y1:ym,x2:xm,y2:y0,style:"stroke:var(--ink);stroke-dasharray:3 3"});
+  sv(s,"text",{x:xm+6,y:y0-6,"font-size":12,"font-weight":600,style:T},"IC50");
+  sv(s,"text",{x:x0+8,y:y1-6,"font-size":11,style:M},"top plateau");sv(s,"text",{x:x1-8,y:y0-22,"text-anchor":"end","font-size":11,style:M},"bottom plateau");
+})();
+(function(){
+  const s=document.getElementById("gels"); const groups=[["GelMA 5% · with cells",true],["GelMA 5% · no cells",false],["GelMA 10% · with cells",true],["GelMA 10% · no cells",false]];
+  const days=["Day 0","Day 1","Day 3","Day 7"], x0=200, cw=160, y0=60, rh=52;
+  days.forEach((d,j)=>sv(s,"text",{x:x0+j*cw+60,y:36,"text-anchor":"middle","font-size":12.5,"font-weight":600,style:T},d));
+  groups.forEach((g,i)=>{const y=y0+i*rh;sv(s,"text",{x:8,y:y+18,"font-size":12.5,"font-weight":600,style:T},g[0]);sv(s,"line",{x1:8,y1:y+40,x2:850,y2:y+40,style:"stroke:var(--line)"});
+    days.forEach((d,j)=>{for(let k=0;k<6;k++){const cx=x0+j*cw+k*22+5,cy=y+14,isR=k<3;
+      let st=isR?"fill:var(--gel);fill-opacity:.85":(g[1]?"fill:var(--cis);fill-opacity:.8":"fill:var(--surface);stroke:var(--ink);stroke-dasharray:2 2");
+      if(isR&&!g[1])st="fill:var(--gel);fill-opacity:.35;stroke:var(--gel)";
+      sv(s,"circle",{cx,cy,r:8,style:st});if(g[1]){sv(s,"circle",{cx:cx-2,cy:cy-1,r:1.6,style:"fill:var(--surface)"});sv(s,"circle",{cx:cx+3,cy:cy+2,r:1.6,style:"fill:var(--surface)"});}}});});
+  const items=[["fill:var(--gel);fill-opacity:.85","rheology, gel with cells"],["fill:var(--gel);fill-opacity:.35;stroke:var(--gel)","rheology, cell-free gel"],["fill:var(--cis);fill-opacity:.8","WST-1, gel with cells"],["fill:var(--surface);stroke:var(--ink);stroke-dasharray:2 2","WST-1 blank, cell-free gel"]];
+  items.forEach((it,i)=>{sv(s,"circle",{cx:16+i*212,cy:284,r:7,style:it[0]});sv(s,"text",{x:28+i*212,y:288,"font-size":11.5,style:M},it[1]);});
+})();
+(function(){
+  const s=document.getElementById("delta"); const x0=60,x1=360,y0=200,y1=30;
+  sv(s,"line",{x1:x0,y1:y0,x2:x1,y2:y0,style:"stroke:var(--muted)"});sv(s,"line",{x1:x0,y1:y0,x2:x0,y2:y1,style:"stroke:var(--muted)"});
+  sv(s,"text",{x:x0,y:y0+20,"text-anchor":"middle","font-size":12,style:M},"Day 0");sv(s,"text",{x:x1,y:y0+20,"text-anchor":"middle","font-size":12,style:M},"Day 7");
+  sv(s,"text",{x:18,y:(y0+y1)/2,"font-size":12,style:M,transform:`rotate(-90 18 ${(y0+y1)/2})`,"text-anchor":"middle"},"G′ (stiffness)");
+  sv(s,"line",{x1:x0,y1:150,x2:x1,y2:140,style:"stroke:var(--gel);stroke-width:3;stroke-opacity:.45"});
+  sv(s,"line",{x1:x0,y1:110,x2:x1,y2:55,style:"stroke:var(--gel);stroke-width:3"});
+  [[x0,150,.45],[x1,140,.45],[x0,110,1],[x1,55,1]].forEach(p=>sv(s,"circle",{cx:p[0],cy:p[1],r:5,style:`fill:var(--gel);fill-opacity:${p[2]}`}));
+  sv(s,"text",{x:x1-4,y:160,"text-anchor":"end","font-size":11.5,style:M},"cell-free: small change");
+  sv(s,"text",{x:x1-4,y:46,"text-anchor":"end","font-size":11.5,"font-weight":600,style:T},"with cells: larger change");
+  sv(s,"text",{x:x0+8,y:133,"font-size":11,style:M},"already different on Day 0");
+})();
+
+/* ================= password gate ================= */
+function lock(msg){
+  pass=""; try{localStorage.removeItem("tracker-pass");}catch(e){}
+  document.body.classList.add("locked"); $("#gMsg").textContent=msg||""; $("#gPass").value="";
+  $("#gName").value=myId; setTimeout(()=>($("#gName").value?$("#gPass"):$("#gName")).focus(),0);
+}
+async function unlock(p){
+  const res=await rpc("hnscc_tracker_load",{p_study:STUDY,p_pass:p});
+  pass=p; try{localStorage.setItem("tracker-pass",p);}catch(e){}
+  document.body.classList.remove("locked");
+  apply(res.items||[]); lastSync=Date.now(); renderAll(); showSync(); flush();
+}
+$("#gateForm").addEventListener("submit",async ev=>{
+  ev.preventDefault();
+  const nm=$("#gName").value.trim(), p=$("#gPass").value;
+  if(!nm){$("#gName").focus();return;}
+  myId=nm; $("#whoName").value=nm; try{localStorage.setItem("tracker-name",nm);}catch(e){}
+  $("#gBtn").disabled=true; $("#gMsg").textContent="Checking…";
+  try{await unlock(p);$("#gMsg").textContent="";}
+  catch(e){$("#gMsg").textContent=e.badPass?"Wrong password.":"Could not reach the server. Check the internet connection and try again.";}
+  finally{$("#gBtn").disabled=false;}
+});
+$("#lockBtn").addEventListener("click",()=>lock(""));
+
+/* ================= boot ================= */
+try{myId=localStorage.getItem("tracker-name")||"";}catch(e){}
+{const w=$("#whoName"); w.value=myId;
+ w.addEventListener("change",()=>{myId=w.value.trim();try{localStorage.setItem("tracker-name",myId);}catch(e){}});}
+setupLogForm();
+let start="overview"; try{const s=localStorage.getItem("tracker-tab");if(s)start=s}catch(e){}
+if(location.hash&&TABS.includes(location.hash.slice(1))) start=location.hash.slice(1);
+showTab(start); renderAll();
+window.addEventListener("beforeunload",e=>{if(Object.keys(pending).length){e.preventDefault();e.returnValue="";}});
+setInterval(()=>{if(document.visibilityState==="visible")pull();},POLL_MS);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pull();});
+(async()=>{
+  let saved=""; try{saved=localStorage.getItem("tracker-pass")||"";}catch(e){}
+  if(saved&&myId){try{await unlock(saved);return;}catch(e){lock(e.badPass?"":"Could not reach the server. Check the internet connection and try again.");return;}}
+  lock("");
+})();
+})();
+
+</script>
+</body>
+</html>
